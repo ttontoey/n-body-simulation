@@ -3,45 +3,31 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include <iostream>
+#include "methods/Particle.h"
+#include "methods/BaseSimMethod.h"
+#include "methods/NaivePairwise.h"
 
-const int NUM_BODIES = 200;
+
+const int NUM_PARTICLES = 200;
 const float G = 0.001f;
 const float DT = 0.01f;
 
-struct Body {
-    glm::vec2 pos;
-    glm::vec2 vel;
-    float mass;
-};
+std::vector<Particle> particles;
 
-std::vector<Body> bodies;
+BaseSimMethod* engine = new NaivePairwise(G, DT);
 
-void initBodies() {
-    for (int i = 0; i < NUM_BODIES; ++i) {
-        Body b;
-        b.pos = glm::vec2(rand() % 1000 / 500.0f - 1.0f, rand() % 1000 / 500.0f - 1.0f);
-        b.vel = glm::vec2(0.0f);
-        b.mass = 1.0f;
-        bodies.push_back(b);
+void initParticles() {
+    for (int i = 0; i < NUM_PARTICLES; ++i) {
+        glm::vec2 position = glm::vec2(rand() % 1000 / 500.0f - 1.0f, rand() % 1000 / 500.0f - 1.0f);
+        glm::vec2 velocity = glm::vec2(0.0f);
+        float mass = rand() % 2 + 1.0;
+        Particle p(position, velocity, mass);
+        engine->addParticle(p);
     }
 }
 
 void simulate() {
-    for (int i = 0; i < NUM_BODIES; ++i) {
-        glm::vec2 force(0.0f);
-        for (int j = 0; j < NUM_BODIES; ++j) {
-            if (i == j) continue;
-            glm::vec2 dir = bodies[j].pos - bodies[i].pos;
-            float distSqr = glm::dot(dir, dir) + 1e-4f;
-            float strength = G * bodies[i].mass * bodies[j].mass / distSqr;
-            force += strength * glm::normalize(dir);
-        }
-        bodies[i].vel += DT * force / bodies[i].mass;
-    }
-
-    for (int i = 0; i < NUM_BODIES; ++i) {
-        bodies[i].pos += DT * bodies[i].vel;
-    }
+    engine->simulate();
 }
 
 const char* vertexShaderSource = R"(
@@ -88,14 +74,17 @@ int main() {
     glAttachShader(shaderProgram, fs);
     glLinkProgram(shaderProgram);
 
-    initBodies();
+
+    glEnable(GL_PROGRAM_POINT_SIZE);
+
+    initParticles();
 
     while (!glfwWindowShouldClose(window)) {
         simulate();
-
         std::vector<glm::vec2> positions;
-        for (const auto& b : bodies)
-            positions.push_back(b.pos);
+
+        for (const auto& p : engine->getParticles())
+            positions.push_back(p.getPosition());
 
         glClear(GL_COLOR_BUFFER_BIT);
         glUseProgram(shaderProgram);
@@ -106,7 +95,7 @@ int main() {
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)0);
         glEnableVertexAttribArray(0);
 
-        glDrawArrays(GL_POINTS, 0, NUM_BODIES);
+        glDrawArrays(GL_POINTS, 0, NUM_PARTICLES);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

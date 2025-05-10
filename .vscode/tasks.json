@@ -11,6 +11,12 @@
                 "-L${workspaceFolder}/lib",
                 "${workspaceFolder}/src/main.cpp",
                 "${workspaceFolder}/src/glad.c",
+                "${workspaceFolder}/src/methods/Particle.cpp",
+                "${workspaceFolder}/src/methods/Particle.h",
+                "${workspaceFolder}/src/methods/BaseSimMethod.cpp",
+                "${workspaceFolder}/src/methods/BaseSimMethod.h",
+                "${workspaceFolder}/src/methods/NaivePairwise.cpp",
+                "${workspaceFolder}/src/methods/NaivePairwise.h",
                 "-lglfw3dll",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"

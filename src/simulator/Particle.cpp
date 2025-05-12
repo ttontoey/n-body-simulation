@@ -28,6 +28,10 @@ glm::vec2 Particle::getAcceleration() const {
     return acceleration;
 }
 
+void Particle::setMass(float mass) {
+    this->mass = mass;
+}
+
 float Particle::getMass() const {
     return mass;
 }

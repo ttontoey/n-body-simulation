@@ -12,6 +12,7 @@ class Particle {
         glm::vec2 getVelocity() const;
         void setAcceleration(glm::vec2 a);
         glm::vec2 getAcceleration() const;
+        void setMass(float mass);
         float getMass() const;
         
 

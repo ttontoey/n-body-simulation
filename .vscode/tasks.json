@@ -17,6 +17,8 @@
                 "${workspaceFolder}/src/methods/BaseSimMethod.h",
                 "${workspaceFolder}/src/methods/NaivePairwise.cpp",
                 "${workspaceFolder}/src/methods/NaivePairwise.h",
+                "${workspaceFolder}/src/methods/VerletPairwise.cpp",
+                "${workspaceFolder}/src/methods/VerletPairwise.h",
                 "-lglfw3dll",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"

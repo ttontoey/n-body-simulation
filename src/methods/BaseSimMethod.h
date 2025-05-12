@@ -9,6 +9,7 @@ class BaseSimMethod {
     public:
         BaseSimMethod(float G, float DT);
         virtual void simulate();
+        virtual void initialize(int numParticle);
         virtual std::vector<Particle> getParticles();
         void addParticle(Particle p);
     protected:

@@ -3,13 +3,15 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include <iostream>
+#include <chrono>
+
 #include "methods/Particle.h"
 #include "methods/BaseSimMethod.h"
 #include "methods/NaivePairwise.h"
+#include "methods/VerletPairwise.h"
 
-
-const int NUM_PARTICLES = 200;
-const float G = 0.001f;
+const int NUM_PARTICLES = 500;
+const float G = 1E-4f;
 const float DT = 0.01f;
 
 std::vector<Particle> particles;
@@ -17,13 +19,7 @@ std::vector<Particle> particles;
 BaseSimMethod* engine = new NaivePairwise(G, DT);
 
 void initParticles() {
-    for (int i = 0; i < NUM_PARTICLES; ++i) {
-        glm::vec2 position = glm::vec2(rand() % 1000 / 500.0f - 1.0f, rand() % 1000 / 500.0f - 1.0f);
-        glm::vec2 velocity = glm::vec2(0.0f);
-        float mass = rand() % 2 + 1.0;
-        Particle p(position, velocity, mass);
-        engine->addParticle(p);
-    }
+    engine->initialize(NUM_PARTICLES);
 }
 
 void simulate() {
@@ -80,7 +76,15 @@ int main() {
     initParticles();
 
     while (!glfwWindowShouldClose(window)) {
+
+        auto start = std::chrono::high_resolution_clock::now();
         simulate();
+        auto end = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<double> duration = end - start;
+        std::cout << "Frame computation time: " << duration.count() << " seconds" << std::endl;
+
+
         std::vector<glm::vec2> positions;
 
         for (const auto& p : engine->getParticles())

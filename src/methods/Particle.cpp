@@ -1,8 +1,8 @@
 #include "Particle.h"
 #include <glm/glm.hpp>
 
-Particle::Particle(glm::vec2 pos, glm::vec2 velocity, float mass)
-    : pos(pos), velocity(velocity), mass(mass) {}
+Particle::Particle(glm::vec2 pos, float mass)
+    : pos(pos), velocity(glm::vec2(0.0, 0.0)), acceleration(glm::vec2(0.0, 0.0)), mass(mass) {}
 
 void Particle::setPosition(glm::vec2 pos) {
     this->pos = pos;
@@ -18,6 +18,14 @@ void Particle::setVelocity(glm::vec2 velocity) {
 
 glm::vec2 Particle::getVelocity() const {
     return velocity;
+}
+
+void Particle::setAcceleration(glm::vec2 a) {
+    this->acceleration = a;
+}
+
+glm::vec2 Particle::getAcceleration() const {
+    return acceleration;
 }
 
 float Particle::getMass() const {

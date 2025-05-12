@@ -1,13 +1,13 @@
-#include "NaivePairwise.h"
+#include "VerletPairwise.h"
 #include "Particle.h"
 #include <glm/glm.hpp>
 #include <iostream>
 
 
-NaivePairwise::NaivePairwise(float G, float DT)
+VerletPairwise::VerletPairwise(float G, float DT)
     : BaseSimMethod(G, DT) {}
 
-void NaivePairwise::initialize(int numParticle) {
+void VerletPairwise::initialize(int numParticle) {
     for (int i = 0; i < numParticle; i++) {
         glm::vec2 position = glm::vec2(rand() % 1000 / 500.0f - 1.0f, rand() % 1000 / 500.0f - 1.0f);
         float mass = 1.0;
@@ -16,7 +16,9 @@ void NaivePairwise::initialize(int numParticle) {
     }
 }
 
-void NaivePairwise::simulate() {
+void VerletPairwise::simulate() {
+
+    std::vector<glm::vec2> a_prev(particles.size());
     int NUM_PARTICLES = particles.size();
     for (int i = 0; i < NUM_PARTICLES; ++i) {
         glm::vec2 force(0.0f);
@@ -28,18 +30,18 @@ void NaivePairwise::simulate() {
             float strength = (G * particles[i].getMass() * particles[j].getMass()) / distSqr;
             force += strength * glm::normalize(distVec);
         }
-
+        a_prev[i] = particles[i].getAcceleration();
         particles[i].setAcceleration(force / particles[i].getMass());
-        glm::vec2 newVelocity = particles[i].getVelocity() + DT * particles[i].getAcceleration();
+        glm::vec2 newVelocity = particles[i].getVelocity() + DT * 0.5f * (a_prev[i] + particles[i].getAcceleration());
         particles[i].setVelocity(newVelocity);
     }
 
     for (int i = 0; i < NUM_PARTICLES; ++i) {
-        particles[i].setPosition(particles[i].getPosition() + DT * particles[i].getVelocity());
+        particles[i].setPosition(particles[i].getPosition() + DT * particles[i].getVelocity() + 0.5f * a_prev[i] * DT * DT);
     }
 
 }
 
-std::vector<Particle> NaivePairwise::getParticles()  {
+std::vector<Particle> VerletPairwise::getParticles()  {
     return particles;
 }

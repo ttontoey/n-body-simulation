@@ -1,11 +1,11 @@
-#ifndef NAIVEPAIRWISE_H
-#define NAIVEPAIRWISE_H
+#ifndef VERLETPAIRWISE_H
+#define VERLETPAIRWISE_H
 
 #include "./BaseSimMethod.h"
 
-class NaivePairwise : public BaseSimMethod {
+class VerletPairwise : public BaseSimMethod {
 public:
-    NaivePairwise(float G, float DT);
+    VerletPairwise(float G, float DT);
     void simulate() override;
     void initialize(int numParticle) override;
     std::vector<Particle> getParticles() override;

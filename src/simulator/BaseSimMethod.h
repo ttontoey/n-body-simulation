@@ -7,20 +7,21 @@
 
 class BaseSimMethod {
     public:
-        BaseSimMethod(float G, float DT);
+        BaseSimMethod(float G, float DT, bool enableCollision);
         virtual void simulate();
         virtual void initialize(int numParticle);
         virtual std::vector<Particle> getParticles();
-        void addParticle(Particle p);
-        void mergeParticles(std::vector<std::pair<int,int>> mergeList);
+        float getTotalEnergy() const;
 
     protected:
         std::vector<Particle> particles;
         float G;
         float DT;
+        bool enableCollision;
         Particle mergeParticle(int idxSrc, int idxRemove);
+        void addParticle(Particle p);
+        void mergeParticles(std::vector<std::pair<int,int>> mergeList);
         void collisionHandler();
-
 };
 
 #endif

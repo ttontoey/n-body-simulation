@@ -4,8 +4,8 @@
 #include <iostream>
 
 
-VerletPairwise::VerletPairwise(float G, float DT)
-    : BaseSimMethod(G, DT) {}
+VerletPairwise::VerletPairwise(float G, float DT, bool enableCollision)
+    : BaseSimMethod(G, DT, enableCollision) {}
 
 void VerletPairwise::initialize(int numParticle) {
     for (int i = 0; i < numParticle; i++) {

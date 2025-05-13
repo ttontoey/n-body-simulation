@@ -3,6 +3,9 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include <iostream>
+#include <fstream>
+#include <iomanip>
+
 #include <chrono>
 
 #include "simulator/Particle.h"
@@ -10,14 +13,21 @@
 #include "simulator/NaivePairwise.h"
 #include "simulator/VerletPairwise.h"
 
+
 int FRAME = 0;
-int NUM_PARTICLES = 700;
+int NUM_PARTICLES = 200;
 float G = 1E-5f;
 float DT = 0.01f;
 
-std::vector<Particle> particles;
+float COLOR_R = 1.0f;
+float COLOR_G = 1.0f;
+float COLOR_B = 1.0f;
 
-BaseSimMethod* engine = new NaivePairwise(G, DT);
+std::vector<Particle> particles;
+BaseSimMethod* engine = new VerletPairwise(G, DT, false);
+
+std::vector<float> energyRecord;
+std::vector<int> particleRecord;
 
 void initialize() {
     engine->initialize(NUM_PARTICLES);
@@ -40,8 +50,9 @@ void main() {
 const char* fragmentShaderSource = R"(
 #version 330 core
 out vec4 FragColor;
+uniform vec3 userColor;
 void main() {
-    FragColor = vec4(1.0);
+    FragColor = vec4(userColor, 1.0);
 }
 )";
 
@@ -61,16 +72,25 @@ void getUserInput() {
     std::cin >> DT;
 
     int method;
-    std::cout << "Choose simulation method [0] for NaivePairwise, [1] for VerletPairwise): ";
+    std::cout << "Choose simulation method (NaivePairwise [0], VerletPairwise [1]): ";
     std::cin >> method;
 
+    char enableCollision;
+    std::cout << "Enable perfectly inelastic collision? [Y/N]: ";
+    std::cin >> enableCollision;
+
+    std::cout << "Enter RGB values (0.0 - 1.0):\n";
+    std::cout << "R: "; std::cin >> COLOR_R;
+    std::cout << "G: "; std::cin >> COLOR_G;
+    std::cout << "B: "; std::cin >> COLOR_B;
+
     if (method == 0) {
-        engine = new NaivePairwise(G, DT);
+        engine = new NaivePairwise(G, DT, enableCollision=='Y');
     } else if (method == 1) {
-        engine = new VerletPairwise(G, DT);
+        engine = new VerletPairwise(G, DT, enableCollision=='Y');
     } else {
         std::cerr << "Invalid method type. Using NaivePairwise by default.\n";
-        engine = new NaivePairwise(G, DT);
+        engine = new NaivePairwise(G, DT, enableCollision=='Y');
     }
 }
 
@@ -93,6 +113,8 @@ int main() {
     glAttachShader(shaderProgram, vs);
     glAttachShader(shaderProgram, fs);
     glLinkProgram(shaderProgram);
+    GLint colorLocation = glGetUniformLocation(shaderProgram, "userColor");
+
 
 
     glEnable(GL_PROGRAM_POINT_SIZE);
@@ -113,12 +135,34 @@ int main() {
         for (const auto& p : engine->getParticles())
             data.emplace_back(p.getPosition(), p.getMass());
 
-        if (FRAME % 1000 == 0){
-            std::cout << "Frame #" << FRAME << " | Frame compute time: " << duration.count() << " Particles: " << data.size() << std::endl;
+        
+        if (FRAME % 1000 == 0 || FRAME == 1){
+            std::cout << "Frame #" << FRAME << " | Frame compute time: " << duration.count() << "s Particles: " << data.size() << " Energy: " << engine->getTotalEnergy() << std::endl;
+        }
+
+        energyRecord.push_back(engine->getTotalEnergy());
+        particleRecord.push_back(data.size());
+
+        if (FRAME == 100000){
+            std::ofstream outFile("energy_record.txt");
+            if (outFile.is_open()) {
+                for (size_t i = 0; i < energyRecord.size(); ++i) {
+                    outFile << std::setprecision(10) << energyRecord[i];
+                    if (i != energyRecord.size() - 1) outFile << ",";
+                }
+                outFile << std::endl;
+                outFile.close();
+                std::cout << "Energy record written to energy_record.txt\n";
+            } else {
+                std::cerr << "Failed to write energy record to file.\n";
+            }
+            return 0;
         }
 
         glClear(GL_COLOR_BUFFER_BIT);
         glUseProgram(shaderProgram);
+        glUniform3f(colorLocation, COLOR_R, COLOR_G, COLOR_B);
+
         glBindVertexArray(vao);
 
         glBindBuffer(GL_ARRAY_BUFFER, vbo);

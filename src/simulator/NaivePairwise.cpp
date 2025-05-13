@@ -6,8 +6,8 @@
 
 
 
-NaivePairwise::NaivePairwise(float G, float DT)
-    : BaseSimMethod(G, DT) {}
+NaivePairwise::NaivePairwise(float G, float DT, bool enableCollision)
+    : BaseSimMethod(G, DT, enableCollision) {}
 
 void NaivePairwise::initialize(int numParticle) {
     for (int i = 0; i < numParticle; i++) {

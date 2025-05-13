@@ -6,8 +6,8 @@
 #include <iostream>
 
 
-BaseSimMethod::BaseSimMethod(float G, float DT): 
-    G(G), DT(DT) {}
+BaseSimMethod::BaseSimMethod(float G, float DT, bool enableCollision): 
+    G(G), DT(DT), enableCollision(enableCollision) {}
 
 void BaseSimMethod::addParticle(Particle p) {
     particles.push_back(p);
@@ -44,6 +44,10 @@ void BaseSimMethod::mergeParticles(std::vector<std::pair<int,int>> mergeList) {
 
 void BaseSimMethod::collisionHandler(){
 
+    if (!enableCollision){
+        return;
+    }
+
     int NUM_PARTICLES = particles.size();
     std::vector<std::pair<int,int>> toMerge;
     std::set<int> merged;
@@ -61,6 +65,33 @@ void BaseSimMethod::collisionHandler(){
         }
     }
     if (toMerge.size() > 0) mergeParticles(toMerge);
+}
+
+float BaseSimMethod::getTotalEnergy() const{
+    float totalKE = 0.0f;
+    float totalPE = 0.0f;
+
+    for (const Particle& p : particles) {
+        glm::vec2 v = p.getVelocity();
+        totalKE += 0.5f * p.getMass() * glm::dot(v, v);
+    }
+
+    int n = particles.size();
+    for (int i = 0; i < n; ++i) {
+        for (int j = i + 1; j < n; ++j) {
+            glm::vec2 pos_i = particles[i].getPosition();
+            glm::vec2 pos_j = particles[j].getPosition();
+            float distance = glm::length(pos_i - pos_j);
+
+            if (distance > 0.0f) {  // Avoid division by zero
+                float pe = -G * particles[i].getMass() * particles[j].getMass() / distance;
+                totalPE += pe;
+            }
+        }
+    }
+
+    return totalKE + totalPE;
+
 }
 
 void BaseSimMethod::simulate(){}

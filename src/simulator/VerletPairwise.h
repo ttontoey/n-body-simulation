@@ -5,7 +5,7 @@
 
 class VerletPairwise : public BaseSimMethod {
 public:
-    VerletPairwise(float G, float DT);
+    VerletPairwise(float G, float DT, bool enableCollision);
     void simulate() override;
     void initialize(int numParticle) override;
     std::vector<Particle> getParticles() override;

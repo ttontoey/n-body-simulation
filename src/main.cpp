@@ -27,7 +27,6 @@ std::vector<Particle> particles;
 BaseSimMethod* engine = new VerletPairwise(G, DT, false);
 
 std::vector<float> energyRecord;
-std::vector<int> particleRecord;
 
 void initialize() {
     engine->initialize(NUM_PARTICLES);
@@ -43,7 +42,7 @@ layout(location = 0) in vec3 aData; // x, y = position; z = mass
 
 void main() {
     gl_Position = vec4(aData.xy, 0.0, 1.0);
-    gl_PointSize = sqrt(aData.z); // Scale mass to size
+    gl_PointSize = 2.0 * sqrt(aData.z); // Scale mass to size
 }
 )";
 
@@ -141,23 +140,22 @@ int main() {
         }
 
         energyRecord.push_back(engine->getTotalEnergy());
-        particleRecord.push_back(data.size());
 
-        if (FRAME == 100000){
-            std::ofstream outFile("energy_record.txt");
-            if (outFile.is_open()) {
-                for (size_t i = 0; i < energyRecord.size(); ++i) {
-                    outFile << std::setprecision(10) << energyRecord[i];
-                    if (i != energyRecord.size() - 1) outFile << ",";
-                }
-                outFile << std::endl;
-                outFile.close();
-                std::cout << "Energy record written to energy_record.txt\n";
-            } else {
-                std::cerr << "Failed to write energy record to file.\n";
-            }
-            return 0;
-        }
+        // if (FRAME == 100000){
+        //     std::ofstream outFile("energy_record.txt");
+        //     if (outFile.is_open()) {
+        //         for (size_t i = 0; i < energyRecord.size(); ++i) {
+        //             outFile << std::setprecision(10) << energyRecord[i];
+        //             if (i != energyRecord.size() - 1) outFile << ",";
+        //         }
+        //         outFile << std::endl;
+        //         outFile.close();
+        //         std::cout << "Energy record written to energy_record.txt\n";
+        //     } else {
+        //         std::cerr << "Failed to write energy record to file.\n";
+        //     }
+        //     return 0;
+        // }
 
         glClear(GL_COLOR_BUFFER_BIT);
         glUseProgram(shaderProgram);
